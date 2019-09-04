@@ -1,14 +1,34 @@
 <header>
-  <nav class="navbar navbar-expand-md navbar-dark bg-success">
-    <a class="navbar-brand" href="/urls">TinyApp</a>
-    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
-      aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+  <nav class="navbar navbar-expand-md navbar-dark" style="background-color:rgb(0, 23, 117)">
+    <a class="navbar-brand" href="/urls" style="font-size: 35px; font-family: 'Helvetica'; margin-bottom: 10px">TinyApp</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" style="padding: 20px;" href="/urls">My URLs</a>
+        <a class="nav-item nav-link" style="padding: 20px;" href="/urls/new">Create New URL</a>
+        
+        <!--Register/ Login/ Logout-->
+        <div class="form-inline" style="margin-left: 600px"> 
+            <% if(username){%>
+              <form class="form-inline" method="POST" action="/logout">
+                <a class="nav-item nav-link inline" style="padding: 20px">Logged in as <%=username%></a>
+                <button type="submit" class="btn btn-outline-secondary">Logout</button>
+              </form>
+            <%} else {%>
+              <div style="margin-left: 200px">
+                  <form class="form-inline" method="POST" action="/login">
+                    <input class="form-control" type="text" name="username" placeholder="Enter your username"
+                  style="width: 300px; margin: 1em">
+                    
+                    <button type="submit" class="btn btn-primary">Login</button>
+                </form>
+              </div>
+
+           <%}%>
+        </div>
+
       </div>
     </div>
   </nav>
