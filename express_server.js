@@ -47,7 +47,7 @@ app.post("/urls", (req, res) => {
   const { longURL } = req.body;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);         // Respond with 'Ok' (we will replace this)
+  res.redirect(`/urls/${shortURL}`);         
 });
 
 
@@ -74,3 +74,16 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
+
+app.post("/urls/:shortURL", (req, res) => {
+  const { shortURL } = req.params;
+  const { longURL }  = req.body;
+  console.log(shortURL, longURL);
+  if (!urlDatabase[shortURL]) {
+    res.send("The shortURL doesn't exist")
+  } else if (urlDatabase[shortURL]) {
+    urlDatabase[shortURL] = longURL;
+    res.redirect(`/urls/${shortURL}`)
+  }
+});
+
