@@ -43,8 +43,12 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const id = req.cookies.user_id;
   const user = id ? users[id] : null; // check if the cookie already exists with a legit id 
-  let templateVars = { user };
-  res.render("urls_new", templateVars);
+   if (user) {
+    let templateVars = { user };
+    res.render("urls_new", templateVars);
+  } else {
+    res.redirect("/login");
+  }
 });
 
 app.get("/urls/:shortURL", (req, res) => {
