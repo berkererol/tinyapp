@@ -1,33 +1,30 @@
 <header>
   <nav class="navbar navbar-expand-md navbar-dark" style="background-color:rgb(0, 23, 117)">
-    <a class="navbar-brand" href="/urls" style="font-size: 35px; font-family: 'Helvetica'; margin-bottom: 10px">TinyApp</a>
+    <a class="navbar-brand" href="/urls" style="font-size: 24px; font-family:Arial, Helvetica, sans-serif; margin-left: 20px"><b>tiny</b>App</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
       <span class="navbar-toggler-icon"></span>
     </button>
     <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
       <div class="navbar-nav">
-        <a class="nav-item nav-link" style="padding: 20px;" href="/urls">My URLs</a>
-        <a class="nav-item nav-link" style="padding: 20px;" href="/urls/new">Create New URL</a>
+        <a class="nav-item nav-link" style="padding: 20px; font-size: 20px" href="/urls"><b>my</b>URLs</a>
+        <a class="nav-item nav-link" style="padding: 20px; color:darkorange; font-size: 20px" href="/urls/new"><b>create</b>NewURLs +</a>
         
         <!--Register/ Login/ Logout-->
         <div class="form-inline" style="margin-left: 600px"> 
-            <% if(username){%>
-              <form class="form-inline" method="POST" action="/logout">
-                <a class="nav-item nav-link inline" style="padding: 20px">Logged in as <%=username%></a>
-                <button type="submit" class="btn btn-outline-secondary">Logout</button>
+          <% if (user) {%>
+            <form class="form-inline" method="POST" action="/logout">
+              <a class="nav-item nav-link inline" style="padding: 20px">Logged in as <%=user.email%></a>
+              <button type="submit" class="btn btn-outline-secondary">Logout</button>
+            </form>
+          <%} else {%>
+            <div style="margin-left: 200px">
+                <form class="form-inline" method="POST" action="/loginbtn">
+                  <a class="nav-item nav-link" style="padding: 20px;" href="/register">Register</a>
+                  <a class="nav-item nav-link" style="padding: 20px;" href="/login">Login</a>
               </form>
-            <%} else {%>
-              <div style="margin-left: 200px">
-                  <form class="form-inline" method="POST" action="/login">
-                    <input class="form-control" type="text" name="username" placeholder="Enter your username"
-                  style="width: 300px; margin: 1em">
-                    
-                    <button type="submit" class="btn btn-primary">Login</button>
-                </form>
-              </div>
-
-           <%}%>
-        </div>
+            </div>
+          <%}%>
+      </div>
 
       </div>
     </div>
