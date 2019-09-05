@@ -7,7 +7,8 @@ const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override"); //for changing Edit button's request to PUT request.
 const cookieParser = require('cookie-parser');
-const { generateRandomString, findUserByEmail, checkPassword } = require("./helper");
+const bcrypt = require('bcrypt');
+const { generateRandomString, findUserByEmail, } = require("./helper");
 
 app.use(methodOverride("_method"));
 app.use(cookieParser());
@@ -155,24 +156,25 @@ app.get("/login", (req, res) => {
 
 
 app.post("/login", function (req, res) {
-  let loginemail = req.body.loginemail; // get the entered email
-  let loginpassword = req.body.loginpassword; //get the entered password
-  let userID = findUserByEmail(loginemail, users); //returns user id
-  let passwordCheck = checkPassword(loginemail, loginpassword, users);
+  const loginemail = req.body.loginemail; // get the entered email
+  const loginpassword = req.body.loginpassword; //get the entered password
+  const userID = findUserByEmail(loginemail, users); //returns user id
+  const passwordCheck = checkPassword(loginemail, loginpassword, users);
+  console.log(passwordCheck);
 
   if (userID && passwordCheck) {
     res.cookie('user_id', userID);
   } else {
-    res.status(403).send("Invalid email or password combination.");
+    res.send("Invalid email or password combination.");
   }
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 
 
 app.post("/logout", (req, res) => {
   res.clearCookie("user_id");
-  res.redirect("/urls");
+  res.redirect("/login");
 })
 
 app.get("/register", (req, res) => {
@@ -199,7 +201,7 @@ app.post("/register", function (req, res) {
     users[userID] = {
       id: userID,
       email: email,
-      password: password
+      password: bcrypt.hashSync(password, 8)
     }
     res.cookie("user_id", userID);
     res.redirect("/urls");
@@ -243,4 +245,16 @@ const isUsersLink = function (object, id) {
   }
   return usersObject;
 }
+
+//Validate login by checking email and password combination of a user
+const checkPassword = function (loginemail, loginpassword, objectDb) {
+  for (let user in objectDb) {
+    console.log(objectDb[user]);
+    if (objectDb[user].email === loginemail && bcrypt.compareSync(loginpassword, objectDb[user].password)) {
+      return true;
+    }
+  }
+  return false;
+}
+
 
