@@ -29,5 +29,19 @@ const checkPassword = function (email, password, users) {
   return false;
 }
 
+const urlsForUser = function (id) {
+  let arr = Object.values(urlDatabase) // array of objects with longURL and UserID keys
+  let arrayOfURLS = [];
+  for (let obj of arr) {
+    if (obj.userID === id) {
+      arrayOfURLS.push(item.longURL);
+    }
+  }
+  return arrayOfURLS;
+}
 
-module.exports = { generateRandomString, findUserByEmail, checkPassword }
+
+
+
+
+module.exports = { generateRandomString, findUserByEmail, checkPassword, }
