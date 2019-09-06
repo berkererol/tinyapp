@@ -1,5 +1,3 @@
-
-//Generate random alphanumeric string composed of 6 characters
 const generateRandomString = function () {
   let result = '';
   const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
@@ -11,13 +9,14 @@ const generateRandomString = function () {
 }
 
 //Match the given e-mail with the records
-const findUserByEmail = function (email, database) {
+const getUserByEmail = function (email, database) {
   for (let user in database) {
     if (database[user].email === email) {
       return database[user].id;
     }
   }
 }
+
 
 //Validate login by checking email and password combination of a user
 const checkPassword = function (email, password, users) {
@@ -44,4 +43,4 @@ const urlsForUser = function (id) {
 
 
 
-module.exports = { generateRandomString, findUserByEmail, checkPassword, }
+module.exports = { generateRandomString, getUserByEmail, checkPassword, }

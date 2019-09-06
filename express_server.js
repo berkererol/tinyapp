@@ -6,12 +6,17 @@ const app = express();
 const PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 const methodOverride = require("method-override"); //for changing Edit button's request to PUT request.
-const cookieParser = require('cookie-parser');
+const cookieSession = require("cookie-session");
+// const cookieParser = require('cookie-parser');
 const bcrypt = require('bcrypt');
-const { generateRandomString, findUserByEmail, } = require("./helper");
+const { generateRandomString, getUserByEmail } = require("./helpers");
 
+//initialize middlewares
 app.use(methodOverride("_method"));
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys:["lighthouse"],
+}));
 app.use(bodyParser.urlencoded({ extended: true })); // Enables body-parse
 app.set('view engine', 'ejs'); // Enables EJS for rendering the pages
 
@@ -21,7 +26,7 @@ const urlDatabase = {
 };
 
 app.get("/", (req, res) => {
-  res.redirect("/login");
+  res.redirect("/register");
 });
 
 app.listen(PORT, () => {
@@ -34,7 +39,7 @@ app.get("/urls.json", (req, res) => {
 
 // Urls page that shows user's generated short and long URLs:
 app.get("/urls", (req, res) => {
-  const id = req.cookies.user_id;
+  const id = req.session.user_id;
   const user = id ? users[id] : null; // check if the cookie already exists with a legit id 
   if (user) {
     let templateVars = { "urls": isUsersLink(urlDatabase, id), user };
@@ -47,7 +52,7 @@ app.get("/urls", (req, res) => {
 
 // Generate a new short URL from a long URL
 app.get("/urls/new", (req, res) => {
-  const id = req.cookies.user_id;
+  const id = req.session.user_id;
   const user = id ? users[id] : null; // check if the cookie already exists with a legit id 
   if (user) {
     let templateVars = { user };
@@ -60,23 +65,20 @@ app.get("/urls/new", (req, res) => {
 // Short url page where you can edit long URLs
 app.get("/urls/:shortURL", (req, res) => {
   const { shortURL } = req.params;
-  const id = req.cookies.user_id;
+  const id = req.session.user_id;
   const user = id ? users[id] : null; // check if the cookie already exists with a legit id 
-  // let templateVars = { "urls": isUsersLink(urlDatabase, id), user }
-  if (user) {
-    // let templateVars = { "urls": isUsersLink(urlDatabase, id), user }
+  if (user && urlDatabase[shortURL]) {
     let templateVars = { shortURL, longURL: urlDatabase[shortURL].longURL, user };
     res.render("urls_show", templateVars);
   } else {
-    res.redirect("/login")
+    res.send("Requested page was not found")
   }
-  // res.render("urls_show", templateVars);
 });
 
 app.post("/urls", (req, res) => {
   const { longURL } = req.body;
   const shortURL = generateRandomString();
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   urlDatabase[shortURL] = {
     longURL,
     userID,
@@ -84,30 +86,16 @@ app.post("/urls", (req, res) => {
   res.redirect(`/urls/${shortURL}`);
 });
 
-
 app.get("/u/:shortURL", (req, res) => {
   const { shortURL } = req.params;
   const longURL = urlDatabase[shortURL].longURL;
-  console.log(urlDatabase);
-  // console.log("ShortURL:", shortURL, "LongURL:", longURL);
-  res.redirect(`${longURL}`);
+  res.redirect(`http://${longURL}`);
 });
-
-
-
-
-
-
-
-
-
-
-
 
 // when the delete button on the show /urls page is pressed
 app.post("/urls/:shortURL/delete", (req, res) => {
   const { shortURL } = req.params;
-  const userID = req.cookies.user_id;
+  const userID = req.session.user_id;
   if (userID) {
     delete urlDatabase[shortURL];
   } else {
@@ -116,23 +104,9 @@ app.post("/urls/:shortURL/delete", (req, res) => {
   res.redirect("/urls");
 });
 
-
-// app.post("/urls/:shortURL", (req, res) => {
-//   const { shortURL } = req.params;
-//   const { longURL } = req.body;
-//   console.log(shortURL, longURL);
-//   if (!urlDatabase[shortURL]) {
-//     res.send("The shortURL doesn't exist")
-//   } else if (urlDatabase[shortURL]) {
-//     urlDatabase[shortURL] = longURL;
-//     res.redirect(`/urls/${shortURL}`)
-//   }
-// });
-
-
 // when the edit buton on the show URL page is pressed
 app.put("/urls/:shortURL/edit", (req, res) => {
-  const userID = req.cookies.user_id
+  const userID = req.session.user_id
   const shortURL = req.params.shortURL;
   let usersObj = isUsersLink(urlDatabase, userID);
   //check if shortURL exists for current user:
@@ -144,45 +118,36 @@ app.put("/urls/:shortURL/edit", (req, res) => {
   }
 });
 
-
-
-
 app.get("/login", (req, res) => {
-  const id = req.cookies.user_id;
+  const id = req.session.user_id;
   const user = id ? users[id] : null;
   let templateVars = { user };
   res.render("login", templateVars);
 })
 
-
 app.post("/login", function (req, res) {
   const loginemail = req.body.loginemail; // get the entered email
   const loginpassword = req.body.loginpassword; //get the entered password
-  const userID = findUserByEmail(loginemail, users); //returns user id
+  const userID = getUserByEmail(loginemail, users); //returns user id
   const passwordCheck = checkPassword(loginemail, loginpassword, users);
-  console.log(passwordCheck);
-
   if (userID && passwordCheck) {
-    res.cookie('user_id', userID);
+    req.session.user_id = userID;
+    res.redirect("/urls");
   } else {
     res.send("Invalid email or password combination.");
   }
-  res.redirect("/login");
 });
 
-
-
 app.post("/logout", (req, res) => {
-  res.clearCookie("user_id");
+  req.session=null;
   res.redirect("/login");
 })
 
 app.get("/register", (req, res) => {
-  const id = req.cookies.user_id;
+  const id = req.session.user_id;
   const user = id ? users[id] : null; // check if the cookie already exists with a legit id 
   let templateVars = { user };
   res.render("registration", templateVars);
-
 })
 
 app.post("/register", function (req, res) {
@@ -192,23 +157,22 @@ app.post("/register", function (req, res) {
     res.status(400).send("An email or password needs to be entered.")
     return
     //if email is already in use throw an error 
-  } else if (findUserByEmail(email, users)) {
+  } else if (getUserByEmail(email, users)) {
     res.status(400).send("Email is already in use.")
     return
   } else {
     //if the email is not in use, create a new user for TinyApp
-    let userID = generateRandomString();
+    const userID = generateRandomString();
     users[userID] = {
       id: userID,
       email: email,
       password: bcrypt.hashSync(password, 8)
     }
-    res.cookie("user_id", userID);
+    req.session.user_id = userID;
+    // res.cookie("user_id", userID);
     res.redirect("/urls");
-    console.log(users);
   }
 });
-
 
 // DATABASE FOR THE USERS
 const users = {
@@ -225,17 +189,6 @@ const users = {
 }
 
 
-// const urlsForUser = function (id) {
-//   let arr = Object.values(urlDatabase) // array of objects with longURL and UserID keys
-//   let arrayOfURLS = [];
-//   for (let obj of arr) {
-//     if (obj.userID === id) {
-//       arrayOfURLS.push(obj.longURL);
-//     }
-//   }
-//   return arrayOfURLS;
-// }
-
 const isUsersLink = function (object, id) {
   let usersObject = {};
   for (let key in object) {
@@ -249,7 +202,6 @@ const isUsersLink = function (object, id) {
 //Validate login by checking email and password combination of a user
 const checkPassword = function (loginemail, loginpassword, objectDb) {
   for (let user in objectDb) {
-    console.log(objectDb[user]);
     if (objectDb[user].email === loginemail && bcrypt.compareSync(loginpassword, objectDb[user].password)) {
       return true;
     }
